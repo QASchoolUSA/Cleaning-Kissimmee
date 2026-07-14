@@ -1,65 +1,176 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/Button";
+import { ServiceGrid } from "@/components/ServiceGrid";
+import { site } from "@/lib/site";
 
-export default function Home() {
+const trust = [
+  { label: "Local & insured", detail: "Kissimmee-based pros" },
+  { label: "Clear pricing", detail: "Quotes before we clean" },
+  { label: "Easy booking", detail: "Online in under 2 minutes" },
+];
+
+const steps = [
+  {
+    n: "01",
+    title: "Tell us what you need",
+    text: "Pick a service, share a few property details, and choose a time that works.",
+  },
+  {
+    n: "02",
+    title: "We confirm & arrive",
+    text: "You’ll get a confirmation with timing, access notes, and what to expect.",
+  },
+  {
+    n: "03",
+    title: "Enjoy the reset",
+    text: "We clean with a clear checklist and leave your space guest-ready.",
+  },
+];
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <>
+      <section className="relative min-h-[calc(100svh-4rem)] overflow-hidden bg-ink text-white sm:min-h-[calc(100svh-4.5rem)]">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2200&q=80"
+          alt="Bright, freshly cleaned modern living room"
+          fill
           priority
+          className="object-cover"
+          sizes="100vw"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/72 to-ink/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/25" />
+
+        <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-6xl flex-col justify-end px-4 pb-14 pt-24 sm:min-h-[calc(100svh-4.5rem)] sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+          <p className="animate-fade-up text-xs font-bold uppercase tracking-[0.22em] text-[#9fddd5]">
+            {site.name}
           </p>
+          <h1 className="animate-fade-up delay-1 font-display mt-4 max-w-3xl text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+            Clean that feels like Florida sunshine at home
+          </h1>
+          <p className="animate-fade-up delay-2 mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
+            Professional cleaning for Kissimmee homes, vacation rentals, and
+            workplaces—booked simply, priced clearly.
+          </p>
+          <div className="animate-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button href="/book" className="w-full sm:w-auto">
+              Book a cleaning
+            </Button>
+            <Button href="/quote" variant="ghost" className="w-full sm:w-auto">
+              Get a free quote
+            </Button>
+          </div>
+          <div
+            aria-hidden
+            className="animate-draw delay-4 mt-10 h-px w-24 bg-[#7ad8cd]"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="border-b border-line bg-white">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-3 sm:px-6 lg:px-8">
+          {trust.map((item) => (
+            <div key={item.label}>
+              <p className="font-display text-xl font-semibold text-ink">
+                {item.label}
+              </p>
+              <p className="mt-1 text-sm text-muted">{item.detail}</p>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="bg-atmosphere relative overflow-hidden py-20 sm:py-28">
+        <div className="bg-grain absolute inset-0" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-fresh">
+              Services
+            </p>
+            <h2 className="font-display mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              One company. The right clean for every space.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
+              From weekly homes to park-adjacent vacation turnovers, every
+              service has its own page with scope, timing, and starting rates.
+            </p>
+          </div>
+          <div className="mt-14">
+            <ServiceGrid compact />
+          </div>
+          <div className="mt-12">
+            <Link
+              href="/services"
+              className="text-sm font-semibold text-fresh hover:text-fresh-deep"
+            >
+              Browse all services →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-20 sm:py-28">
+        <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-fresh">
+              How it works
+            </p>
+            <h2 className="font-display mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              Booking should feel as clean as the result
+            </h2>
+            <p className="mt-4 text-muted leading-relaxed">
+              Start with a free quote if you want pricing first—or book a time
+              directly in three short steps on any device.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button href="/book">Book now</Button>
+              <Button href="/quote" variant="secondary">
+                Request quote
+              </Button>
+            </div>
+          </div>
+          <ol className="space-y-6">
+            {steps.map((step) => (
+              <li
+                key={step.n}
+                className="grid grid-cols-[auto_1fr] gap-4 border-b border-line pb-6 last:border-0"
+              >
+                <span className="font-display text-3xl font-semibold text-fresh">
+                  {step.n}
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-ink">{step.title}</h3>
+                  <p className="mt-1 text-muted leading-relaxed">{step.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-ink py-20 text-white sm:py-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-0 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-fresh/25 blur-3xl"
+        />
+        <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+            Ready for a spotless reset?
+          </h2>
+          <p className="mt-4 text-white/75">
+            Serving {site.serviceArea}. Call {site.phone} or start online in
+            minutes.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button href="/book">Book cleaning</Button>
+            <Button href="/quote" variant="ghost">
+              Free quote
+            </Button>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
