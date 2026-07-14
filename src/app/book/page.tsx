@@ -18,19 +18,18 @@ export default async function BookPage({ searchParams }: PageProps) {
   return (
     <div className="bg-atmosphere relative overflow-hidden">
       <div className="bg-grain absolute inset-0" />
-      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
-        <div>
+      <div className="relative mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:gap-12 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+        <div className="order-2 lg:order-1 lg:pt-2">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-fresh">
             Online booking
           </p>
-          <h1 className="font-display mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-            Reserve your clean in three easy steps
+          <h1 className="font-display mt-2 text-[1.75rem] font-semibold leading-tight tracking-tight text-ink sm:mt-3 sm:text-5xl">
+            Reserve in three easy taps
           </h1>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
+          <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-4 sm:text-lg">
             Pick a service, choose a day, share access details, and confirm.
-            Designed for thumbs on the go and clear on desktop.
           </p>
-          <div className="mt-8 space-y-4 rounded-2xl border border-line bg-white/70 p-5 text-sm text-muted">
+          <div className="mt-4 hidden space-y-3 rounded-2xl border border-line bg-white/70 p-5 text-sm text-muted sm:mt-8 sm:block">
             <p>
               <span className="font-semibold text-ink">Service area:</span>{" "}
               {site.serviceArea}
@@ -46,7 +45,9 @@ export default async function BookPage({ searchParams }: PageProps) {
             </p>
           </div>
         </div>
-        <BookingForm defaultService={service} />
+        <div className="order-1 lg:order-2">
+          <BookingForm defaultService={service} />
+        </div>
       </div>
     </div>
   );

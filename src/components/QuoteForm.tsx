@@ -1,7 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
+import { estimateQuote, formatMoney } from "@/lib/pricing";
+import { site } from "@/lib/site";
 
 type FormState = {
   name: string;
@@ -20,7 +23,7 @@ const initial: FormState = {
   name: "",
   email: "",
   phone: "",
-  service: "",
+  service: "residential-cleaning",
   propertyType: "Home",
   bedrooms: "3",
   bathrooms: "2",
@@ -29,14 +32,28 @@ const initial: FormState = {
   details: "",
 };
 
+const stepTitles = ["Your home", "Estimate", "Send quote"];
+
 export function QuoteForm({ defaultService = "" }: { defaultService?: string }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>({
     ...initial,
-    service: defaultService,
+    service: defaultService || initial.service,
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const estimate = useMemo(
+    () =>
+      estimateQuote({
+        service: form.service,
+        bedrooms: form.bedrooms,
+        bathrooms: form.bathrooms,
+        frequency: form.frequency,
+        sqft: form.sqft,
+      }),
+    [form.service, form.bedrooms, form.bathrooms, form.frequency, form.sqft],
+  );
 
   const serviceName = useMemo(
     () => services.find((s) => s.slug === form.service)?.name ?? form.service,
@@ -47,14 +64,15 @@ export function QuoteForm({ defaultService = "" }: { defaultService?: string }) 
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function next() {
-    if (step === 1 && (!form.name || !form.email || !form.phone)) return;
-    if (step === 2 && !form.service) return;
-    setStep((s) => Math.min(3, s + 1));
+  function canContinue() {
+    if (step === 1) return Boolean(form.service);
+    if (step === 2) return Boolean(estimate);
+    return Boolean(form.name && form.email && form.phone);
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!canContinue()) return;
     setSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 700));
     setSubmitting(false);
@@ -63,28 +81,33 @@ export function QuoteForm({ defaultService = "" }: { defaultService?: string }) 
 
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-fresh/30 bg-fresh-mist p-8 text-center sm:p-10">
+      <div className="rounded-2xl border border-fresh/30 bg-fresh-mist p-6 text-center sm:p-10">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-fresh-deep">
           Quote request received
         </p>
-        <h2 className="font-display mt-3 text-3xl font-semibold text-ink">
+        <h2 className="font-display mt-3 text-2xl font-semibold text-ink sm:text-3xl">
           Thanks, {form.name.split(" ")[0]}!
         </h2>
-        <p className="mx-auto mt-3 max-w-md text-muted">
-          We&apos;ll review your {serviceName || "cleaning"} details and email a
-          free quote to <strong className="text-ink">{form.email}</strong> within
-          one business day.
+        {estimate ? (
+          <p className="mt-3 text-lg font-semibold text-ink">
+            Estimate {formatMoney(estimate.low)}–{formatMoney(estimate.high)}
+          </p>
+        ) : null}
+        <p className="mx-auto mt-3 max-w-md text-sm text-muted sm:text-base">
+          We&apos;ll confirm your {serviceName} quote at{" "}
+          <strong className="text-ink">{form.email}</strong> within one business
+          day.
         </p>
         <button
           type="button"
-          className="mt-8 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white"
+          className="mt-8 min-h-12 w-full rounded-2xl bg-ink px-6 text-sm font-semibold text-white sm:w-auto sm:rounded-full"
           onClick={() => {
             setSubmitted(false);
             setStep(1);
-            setForm({ ...initial, service: defaultService });
+            setForm({ ...initial, service: defaultService || initial.service });
           }}
         >
-          Submit another request
+          Start another estimate
         </button>
       </div>
     );
@@ -93,227 +116,267 @@ export function QuoteForm({ defaultService = "" }: { defaultService?: string }) 
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-2xl border border-line bg-white p-5 shadow-[var(--shadow)] sm:p-8"
+      className="overflow-hidden rounded-2xl border border-line bg-white shadow-[var(--shadow)]"
     >
-      <div className="mb-8">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-ink">Free quote</p>
-          <p className="text-sm text-muted">Step {step} of 3</p>
+      {/* Live estimate header — always visible */}
+      <div className="border-b border-line bg-ink px-4 py-4 text-white sm:px-6 sm:py-5">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-[#9fddd5]">
+              Instant estimate
+            </p>
+            <p className="font-display mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+              {estimate
+                ? `${formatMoney(estimate.low)}–${formatMoney(estimate.high)}`
+                : "—"}
+            </p>
+          </div>
+          <p className="pb-1 text-right text-xs text-white/65">
+            Step {step}/3
+            <br />
+            <span className="font-semibold text-white/90">{stepTitles[step - 1]}</span>
+          </p>
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-1.5">
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${
-                n <= step ? "bg-fresh" : "bg-sky"
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                n <= step ? "bg-fresh" : "bg-white/20"
               }`}
             />
           ))}
         </div>
+        <p className="mt-2 text-[0.7rem] text-white/55">
+          Final price confirmed after review · not a binding rate
+        </p>
       </div>
 
-      {step === 1 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className="label-field" htmlFor="q-name">
-              Full name
-            </label>
-            <input
-              id="q-name"
-              className="input-field"
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
-              placeholder="Alex Rivera"
-              required
-              autoComplete="name"
-            />
-          </div>
-          <div>
-            <label className="label-field" htmlFor="q-email">
-              Email
-            </label>
-            <input
-              id="q-email"
-              type="email"
-              className="input-field"
-              value={form.email}
-              onChange={(e) => update("email", e.target.value)}
-              placeholder="you@email.com"
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div>
-            <label className="label-field" htmlFor="q-phone">
-              Phone
-            </label>
-            <input
-              id="q-phone"
-              type="tel"
-              className="input-field"
-              value={form.phone}
-              onChange={(e) => update("phone", e.target.value)}
-              placeholder="(407) 555-0142"
-              required
-              autoComplete="tel"
-            />
-          </div>
-        </div>
-      )}
+      <div className="px-4 py-5 sm:px-6 sm:py-7">
+        {step === 1 && (
+          <div className="space-y-5">
+            <div>
+              <p className="label-field">Service</p>
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {services.map((service) => {
+                  const selected = form.service === service.slug;
+                  return (
+                    <button
+                      key={service.slug}
+                      type="button"
+                      onClick={() => update("service", service.slug)}
+                      className={`min-h-14 shrink-0 rounded-2xl border px-4 py-3 text-left transition active:scale-[0.98] ${
+                        selected
+                          ? "border-fresh bg-fresh-mist"
+                          : "border-line bg-white"
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold text-ink">
+                        {service.shortName}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-muted">
+                        From {service.startingAt}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-      {step === 2 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className="label-field" htmlFor="q-service">
-              Service needed
-            </label>
-            <select
-              id="q-service"
-              className="input-field"
-              value={form.service}
-              onChange={(e) => update("service", e.target.value)}
-              required
-            >
-              <option value="">Select a service</option>
-              {services.map((service) => (
-                <option key={service.slug} value={service.slug}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label-field" htmlFor="q-property">
-              Property type
-            </label>
-            <select
-              id="q-property"
-              className="input-field"
+            <ChipSelect
+              label="Property type"
               value={form.propertyType}
-              onChange={(e) => update("propertyType", e.target.value)}
-            >
-              <option>Home</option>
-              <option>Condo / Townhome</option>
-              <option>Vacation rental</option>
-              <option>Office</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="label-field" htmlFor="q-frequency">
-              Frequency
-            </label>
-            <select
-              id="q-frequency"
-              className="input-field"
+              onChange={(v) => update("propertyType", v)}
+              columns={2}
+              options={[
+                { value: "Home", label: "Home" },
+                { value: "Condo / Townhome", label: "Condo" },
+                { value: "Vacation rental", label: "Vacation rental" },
+                { value: "Office", label: "Office" },
+              ]}
+            />
+
+            <ChipSelect
+              label="How often?"
               value={form.frequency}
-              onChange={(e) => update("frequency", e.target.value)}
-            >
-              <option>One-time</option>
-              <option>Weekly</option>
-              <option>Bi-weekly</option>
-              <option>Monthly</option>
-            </select>
+              onChange={(v) => update("frequency", v)}
+              columns={2}
+              options={[
+                { value: "One-time", label: "One-time" },
+                { value: "Weekly", label: "Weekly", hint: "Best value" },
+                { value: "Bi-weekly", label: "Bi-weekly" },
+                { value: "Monthly", label: "Monthly" },
+              ]}
+            />
           </div>
-          <div>
-            <label className="label-field" htmlFor="q-beds">
-              Bedrooms
-            </label>
-            <select
-              id="q-beds"
-              className="input-field"
+        )}
+
+        {step === 2 && (
+          <div className="space-y-5">
+            <ChipSelect
+              label="Bedrooms"
               value={form.bedrooms}
-              onChange={(e) => update("bedrooms", e.target.value)}
-            >
-              {["Studio", "1", "2", "3", "4", "5+"].map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label-field" htmlFor="q-baths">
-              Bathrooms
-            </label>
-            <select
-              id="q-baths"
-              className="input-field"
+              onChange={(v) => update("bedrooms", v)}
+              columns={3}
+              options={["Studio", "1", "2", "3", "4", "5+"].map((n) => ({
+                value: n,
+                label: n === "Studio" ? "Studio" : `${n}`,
+              }))}
+            />
+
+            <ChipSelect
+              label="Bathrooms"
               value={form.bathrooms}
-              onChange={(e) => update("bathrooms", e.target.value)}
+              onChange={(v) => update("bathrooms", v)}
+              columns={3}
+              options={["1", "1.5", "2", "2.5", "3", "3.5", "4+"].map((n) => ({
+                value: n,
+                label: n,
+              }))}
+            />
+
+            <div>
+              <label className="label-field" htmlFor="q-sqft">
+                Square footage{" "}
+                <span className="font-normal text-muted">(optional)</span>
+              </label>
+              <input
+                id="q-sqft"
+                className="input-field min-h-12"
+                value={form.sqft}
+                onChange={(e) => update("sqft", e.target.value)}
+                placeholder="e.g. 1,800"
+                inputMode="numeric"
+              />
+            </div>
+
+            {estimate ? (
+              <div className="rounded-2xl bg-fresh-mist px-4 py-4">
+                <p className="text-sm font-semibold text-ink">
+                  {estimate.label}: {formatMoney(estimate.low)}–
+                  {formatMoney(estimate.high)}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  Based on {form.bedrooms} bed · {form.bathrooms} bath ·{" "}
+                  {form.frequency.toLowerCase()}. Tap continue to send this for a
+                  confirmed quote.
+                </p>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-paper px-4 py-3 text-sm text-muted">
+              <p className="font-semibold text-ink">
+                {estimate
+                  ? `${formatMoney(estimate.low)}–${formatMoney(estimate.high)}`
+                  : "Custom quote"}
+              </p>
+              <p className="mt-1">
+                {serviceName} · {form.propertyType} · {form.bedrooms} bed /{" "}
+                {form.bathrooms} bath · {form.frequency}
+              </p>
+            </div>
+            <div>
+              <label className="label-field" htmlFor="q-name">
+                Full name
+              </label>
+              <input
+                id="q-name"
+                className="input-field min-h-12"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Alex Rivera"
+                required
+                autoComplete="name"
+              />
+            </div>
+            <div>
+              <label className="label-field" htmlFor="q-email">
+                Email
+              </label>
+              <input
+                id="q-email"
+                type="email"
+                className="input-field min-h-12"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                placeholder="you@email.com"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div>
+              <label className="label-field" htmlFor="q-phone">
+                Phone
+              </label>
+              <input
+                id="q-phone"
+                type="tel"
+                className="input-field min-h-12"
+                value={form.phone}
+                onChange={(e) => update("phone", e.target.value)}
+                placeholder="(407) 555-0142"
+                required
+                autoComplete="tel"
+              />
+            </div>
+            <div>
+              <label className="label-field" htmlFor="q-details">
+                Notes <span className="font-normal text-muted">(optional)</span>
+              </label>
+              <textarea
+                id="q-details"
+                className="input-field min-h-24 resize-y"
+                value={form.details}
+                onChange={(e) => update("details", e.target.value)}
+                placeholder="Pets, access notes, must-clean areas…"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sticky action bar on mobile */}
+      <div className="sticky bottom-0 border-t border-line bg-white/95 px-4 py-3 backdrop-blur-md sm:static sm:bg-white sm:px-6 sm:py-5 sm:backdrop-blur-none">
+        <div className="flex gap-2.5">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep((s) => s - 1)}
+              className="min-h-12 flex-1 rounded-2xl border border-line text-sm font-semibold text-ink-soft sm:flex-none sm:rounded-full sm:px-6"
             >
-              {["1", "1.5", "2", "2.5", "3", "3.5", "4+"].map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="label-field" htmlFor="q-sqft">
-              Approx. square footage (optional)
-            </label>
-            <input
-              id="q-sqft"
-              className="input-field"
-              value={form.sqft}
-              onChange={(e) => update("sqft", e.target.value)}
-              placeholder="1,800"
-              inputMode="numeric"
-            />
-          </div>
+              Back
+            </button>
+          ) : (
+            <a
+              href={site.phoneHref}
+              className="flex min-h-12 flex-1 items-center justify-center rounded-2xl border border-line text-sm font-semibold text-ink-soft sm:hidden"
+            >
+              Call instead
+            </a>
+          )}
+          {step < 3 ? (
+            <button
+              type="button"
+              disabled={!canContinue()}
+              onClick={() => setStep((s) => s + 1)}
+              className="min-h-12 flex-[1.4] rounded-2xl bg-fresh text-sm font-semibold text-white disabled:opacity-45 sm:flex-none sm:rounded-full sm:px-8"
+            >
+              {step === 1 ? "See estimate" : "Continue"}
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={submitting || !canContinue()}
+              className="min-h-12 flex-[1.6] rounded-2xl bg-ink text-sm font-semibold text-white disabled:opacity-70 sm:flex-none sm:rounded-full sm:px-8"
+            >
+              {submitting ? "Sending…" : "Send my quote"}
+            </button>
+          )}
         </div>
-      )}
-
-      {step === 3 && (
-        <div className="grid gap-4">
-          <div>
-            <label className="label-field" htmlFor="q-details">
-              Anything we should know?
-            </label>
-            <textarea
-              id="q-details"
-              className="input-field min-h-36 resize-y"
-              value={form.details}
-              onChange={(e) => update("details", e.target.value)}
-              placeholder="Pets, access instructions, must-clean areas, preferred timing…"
-            />
-          </div>
-          <div className="rounded-xl bg-paper p-4 text-sm text-muted">
-            <p>
-              <span className="font-semibold text-ink">Summary:</span>{" "}
-              {serviceName || "Service"} · {form.propertyType} ·{" "}
-              {form.bedrooms} bed / {form.bathrooms} bath · {form.frequency}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-        {step > 1 ? (
-          <button
-            type="button"
-            onClick={() => setStep((s) => s - 1)}
-            className="rounded-full border border-line px-6 py-3 text-sm font-semibold text-ink-soft"
-          >
-            Back
-          </button>
-        ) : (
-          <span />
-        )}
-        {step < 3 ? (
-          <button
-            type="button"
-            onClick={next}
-            className="rounded-full bg-fresh px-6 py-3 text-sm font-semibold text-white hover:bg-fresh-deep"
-          >
-            Continue
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white hover:bg-ink-soft disabled:opacity-70"
-          >
-            {submitting ? "Sending…" : "Get my free quote"}
-          </button>
-        )}
       </div>
     </form>
   );
