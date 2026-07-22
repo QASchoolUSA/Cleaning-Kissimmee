@@ -1,3 +1,5 @@
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
 export type BookingBroomPayload = {
   customer_name: string;
   email?: string;
@@ -15,13 +17,28 @@ export type BookingBroomResult = {
   message?: string;
 };
 
+function readEnv(name: string): string | undefined {
+  const fromProcess = process.env[name];
+  if (fromProcess) return fromProcess;
+
+  try {
+    const { env } = getCloudflareContext();
+    const fromWorker = env[name as keyof typeof env];
+    if (typeof fromWorker === "string") return fromWorker;
+  } catch {
+    // Not running inside the Cloudflare worker (e.g. next dev).
+  }
+
+  return undefined;
+}
+
 function getConfig() {
   return {
     baseUrl: (
-      process.env.BOOKING_BROOM_URL || "https://bookings.kedrik.com"
+      readEnv("BOOKING_BROOM_URL") || "https://bookings.kedrik.com"
     ).replace(/\/$/, ""),
-    apiKey: process.env.BOOKING_BROOM_API_KEY || "",
-    siteSlug: process.env.BOOKING_BROOM_SITE_SLUG || "kissimmee",
+    apiKey: readEnv("BOOKING_BROOM_API_KEY") || "",
+    siteSlug: readEnv("BOOKING_BROOM_SITE_SLUG") || "kissimmee",
   };
 }
 
