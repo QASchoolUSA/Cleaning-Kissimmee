@@ -52,6 +52,7 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const minDate = useMemo(() => {
     const d = new Date();
@@ -78,9 +79,41 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
     event.preventDefault();
     if (!canContinue()) return;
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setSubmitting(false);
-    setSubmitted(true);
+    setSubmitError(null);
+    try {
+      const fullAddress = [form.address, form.city, form.zip]
+        .filter(Boolean)
+        .join(", ");
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          address: fullAddress,
+          service_type: serviceName,
+          preferred_date: form.date,
+          preferred_time: form.time,
+          notes: form.notes.trim() || undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+      if (!res.ok || data.ok === false) {
+        setSubmitError(
+          data.message || "Unable to submit booking. Please try again.",
+        );
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setSubmitError("Unable to submit booking. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -310,6 +343,11 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
                 autoComplete="tel"
               />
             </div>
+            {submitError && (
+              <p className="text-sm font-semibold text-red-700" role="alert">
+                {submitError}
+              </p>
+            )}
           </div>
         )}
       </div>
