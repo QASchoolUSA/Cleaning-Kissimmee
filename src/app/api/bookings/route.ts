@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { createBooking } from "@/lib/booking-broom";
+import {
+  createBooking,
+  type BookingBroomProperty,
+  type BookingBroomQuote,
+} from "@/lib/booking-broom";
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +16,8 @@ export async function POST(request: Request) {
       preferred_date?: string;
       preferred_time?: string;
       notes?: string;
+      property?: BookingBroomProperty;
+      quote?: BookingBroomQuote;
     };
 
     if (!json.customer_name?.trim()) {
@@ -30,6 +36,8 @@ export async function POST(request: Request) {
       preferred_date: json.preferred_date?.trim(),
       preferred_time: json.preferred_time?.trim(),
       notes: json.notes?.trim(),
+      property: json.property,
+      quote: json.quote,
     });
 
     if (!result.ok) {

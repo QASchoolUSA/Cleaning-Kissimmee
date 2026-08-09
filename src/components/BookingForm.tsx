@@ -3,12 +3,17 @@
 import { FormEvent, useMemo, useState } from "react";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
+import { estimateQuote, formatMoney } from "@/lib/pricing";
 import { site } from "@/lib/site";
 
 type BookingState = {
   service: string;
   date: string;
   time: string;
+  bedrooms: string;
+  bathrooms: string;
+  sqft: string;
+  frequency: string;
   address: string;
   city: string;
   zip: string;
@@ -22,6 +27,10 @@ const initial: BookingState = {
   service: "",
   date: "",
   time: "9:00 AM",
+  bedrooms: "3",
+  bathrooms: "2",
+  sqft: "",
+  frequency: "One-time",
   address: "",
   city: "Kissimmee",
   zip: "",
@@ -30,6 +39,29 @@ const initial: BookingState = {
   phone: "",
   notes: "",
 };
+
+const BEDROOM_OPTIONS = ["Studio", "1", "2", "3", "4", "5+"];
+const BATHROOM_OPTIONS = ["1", "1.5", "2", "2.5", "3", "3.5", "4+"];
+const SQFT_OPTIONS = [
+  "Under 1,000",
+  "1,000–1,500",
+  "1,500–2,500",
+  "2,500–4,000",
+  "4,000+",
+  "Not sure",
+];
+
+/** Chips carry labels; these turn them into the numbers Booking Broom stores. */
+function bedroomCount(value: string): number | undefined {
+  if (value === "Studio") return 0;
+  const parsed = Number(value.replace("+", ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function bathroomCount(value: string): number | undefined {
+  const parsed = Number(value.replace("+", ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 const times = [
   "8:00 AM",
@@ -42,7 +74,8 @@ const times = [
   "3:00 PM",
 ];
 
-const stepTitles = ["Service & time", "Location", "Your details"];
+const stepTitles = ["Service & time", "Your home", "Location", "Your details"];
+const TOTAL_STEPS = stepTitles.length;
 
 export function BookingForm({ defaultService = "" }: { defaultService?: string }) {
   const [step, setStep] = useState(1);
@@ -65,13 +98,26 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
     [form.service],
   );
 
+  const estimate = useMemo(
+    () =>
+      estimateQuote({
+        service: form.service,
+        bedrooms: form.bedrooms,
+        bathrooms: form.bathrooms,
+        frequency: form.frequency,
+        sqft: form.sqft === "Not sure" ? "" : form.sqft,
+      }),
+    [form.service, form.bedrooms, form.bathrooms, form.frequency, form.sqft],
+  );
+
   function update<K extends keyof BookingState>(key: K, value: BookingState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   function canContinue() {
     if (step === 1) return Boolean(form.service && form.date && form.time);
-    if (step === 2) return Boolean(form.address && form.city && form.zip);
+    if (step === 2) return Boolean(form.bedrooms && form.bathrooms);
+    if (step === 3) return Boolean(form.address && form.city && form.zip);
     return Boolean(form.name && form.email && form.phone);
   }
 
@@ -96,6 +142,23 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
           preferred_date: form.date,
           preferred_time: form.time,
           notes: form.notes.trim() || undefined,
+          property: {
+            bedrooms: bedroomCount(form.bedrooms),
+            bathrooms: bathroomCount(form.bathrooms),
+            size_label:
+              form.sqft && form.sqft !== "Not sure"
+                ? `${form.sqft} sq ft`
+                : undefined,
+          },
+          quote: estimate
+            ? {
+                estimate_low: estimate.low,
+                estimate_high: estimate.high,
+                currency: "USD",
+                frequency: form.frequency,
+                payment_terms: "Due after cleaning is complete",
+              }
+            : undefined,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -154,11 +217,11 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-ink">Book a cleaning</p>
           <p className="text-xs font-semibold text-muted">
-            {step}/3 · {stepTitles[step - 1]}
+            {step}/{TOTAL_STEPS} · {stepTitles[step - 1]}
           </p>
         </div>
         <div className="mt-3 flex gap-1.5">
-          {[1, 2, 3].map((n) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((n) => (
             <div
               key={n}
               className={`h-1 flex-1 rounded-full transition-colors ${
@@ -229,6 +292,58 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
         )}
 
         {step === 2 && (
+          <div className="space-y-5">
+            <ChipSelect
+              label="Bedrooms"
+              value={form.bedrooms}
+              onChange={(v) => update("bedrooms", v)}
+              columns={3}
+              options={BEDROOM_OPTIONS.map((n) => ({ value: n, label: n }))}
+            />
+
+            <ChipSelect
+              label="Bathrooms"
+              value={form.bathrooms}
+              onChange={(v) => update("bathrooms", v)}
+              columns={4}
+              options={BATHROOM_OPTIONS.map((n) => ({ value: n, label: n }))}
+            />
+
+            <ChipSelect
+              label="Square footage (optional)"
+              value={form.sqft}
+              onChange={(v) => update("sqft", v)}
+              columns={3}
+              options={SQFT_OPTIONS.map((n) => ({ value: n, label: n }))}
+            />
+
+            <ChipSelect
+              label="How often?"
+              value={form.frequency}
+              onChange={(v) => update("frequency", v)}
+              columns={4}
+              options={["One-time", "Weekly", "Bi-weekly", "Monthly"].map((n) => ({
+                value: n,
+                label: n,
+              }))}
+            />
+
+            {estimate ? (
+              <div className="rounded-2xl border border-fresh/30 bg-fresh-mist px-4 py-3">
+                <p className="text-sm font-semibold text-fresh-deep">
+                  Estimated {formatMoney(estimate.low)}–{formatMoney(estimate.high)}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  Based on {form.bedrooms} bed · {form.bathrooms} bath ·{" "}
+                  {form.frequency.toLowerCase()}. We confirm the final price before we
+                  start.
+                </p>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="space-y-4">
             <div>
               <label className="label-field" htmlFor="b-address">
@@ -290,12 +405,17 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-4">
             <div className="rounded-2xl bg-paper px-4 py-3 text-sm leading-relaxed text-muted">
               <p className="font-semibold text-ink">Booking summary</p>
               <p className="mt-1">
                 {serviceName}
+                {estimate
+                  ? ` · ${formatMoney(estimate.low)}–${formatMoney(estimate.high)}`
+                  : ""}
+                <br />
+                {form.bedrooms} bed · {form.bathrooms} bath · {form.frequency}
                 <br />
                 {form.date} · {form.time}
                 <br />
@@ -370,7 +490,7 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
               Call us
             </a>
           )}
-          {step < 3 ? (
+          {step < TOTAL_STEPS ? (
             <button
               type="button"
               disabled={!canContinue()}

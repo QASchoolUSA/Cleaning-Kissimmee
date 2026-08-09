@@ -1,5 +1,25 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+/** Structured fields Booking Broom stores outside of the free-text notes. */
+export type BookingBroomProperty = {
+  bedrooms?: number;
+  bathrooms?: number;
+  square_feet?: number;
+  size_label?: string;
+  home_type?: string;
+};
+
+export type BookingBroomQuote = {
+  estimate?: number;
+  estimate_low?: number;
+  estimate_high?: number;
+  currency?: string;
+  service_level?: string;
+  frequency?: string;
+  add_ons?: { label: string; price?: number }[];
+  payment_terms?: string;
+};
+
 export type BookingBroomPayload = {
   customer_name: string;
   email?: string;
@@ -9,6 +29,8 @@ export type BookingBroomPayload = {
   preferred_date?: string;
   preferred_time?: string;
   notes?: string;
+  property?: BookingBroomProperty;
+  quote?: BookingBroomQuote;
 };
 
 export type BookingBroomResult = {
