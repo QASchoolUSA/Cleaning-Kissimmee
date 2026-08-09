@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
+import { getPricingConfig } from "@/lib/pricing-config";
 import { site } from "@/lib/site";
 
 const trust = [
@@ -28,7 +29,9 @@ const steps = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const config = await getPricingConfig();
+
   return (
     <>
       <Hero />
@@ -67,7 +70,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-8 sm:mt-14">
-            <ServiceGrid compact />
+            <ServiceGrid compact config={config} />
           </div>
           <div className="mt-8 sm:mt-12">
             <Link

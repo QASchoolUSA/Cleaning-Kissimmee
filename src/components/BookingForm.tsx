@@ -3,7 +3,13 @@
 import { FormEvent, useMemo, useState } from "react";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
-import { estimateQuote, formatMoney } from "@/lib/pricing";
+import {
+  DEFAULT_PRICING_CONFIG,
+  estimateQuote,
+  formatMoney,
+  startingAtLabel,
+  type PricingConfig,
+} from "@/lib/pricing";
 import { site } from "@/lib/site";
 
 type BookingState = {
@@ -77,7 +83,13 @@ const times = [
 const stepTitles = ["Service & time", "Your home", "Location", "Your details"];
 const TOTAL_STEPS = stepTitles.length;
 
-export function BookingForm({ defaultService = "" }: { defaultService?: string }) {
+export function BookingForm({
+  defaultService = "",
+  config = DEFAULT_PRICING_CONFIG,
+}: {
+  defaultService?: string;
+  config?: PricingConfig;
+}) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<BookingState>({
     ...initial,
@@ -100,14 +112,24 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
 
   const estimate = useMemo(
     () =>
-      estimateQuote({
-        service: form.service,
-        bedrooms: form.bedrooms,
-        bathrooms: form.bathrooms,
-        frequency: form.frequency,
-        sqft: form.sqft === "Not sure" ? "" : form.sqft,
-      }),
-    [form.service, form.bedrooms, form.bathrooms, form.frequency, form.sqft],
+      estimateQuote(
+        {
+          service: form.service,
+          bedrooms: form.bedrooms,
+          bathrooms: form.bathrooms,
+          frequency: form.frequency,
+          sqft: form.sqft === "Not sure" ? "" : form.sqft,
+        },
+        config,
+      ),
+    [
+      form.service,
+      form.bedrooms,
+      form.bathrooms,
+      form.frequency,
+      form.sqft,
+      config,
+    ],
   );
 
   function update<K extends keyof BookingState>(key: K, value: BookingState[K]) {
@@ -255,7 +277,7 @@ export function BookingForm({ defaultService = "" }: { defaultService?: string }
                         {service.shortName}
                       </span>
                       <span className="mt-1 block text-[0.7rem] text-muted">
-                        From {service.startingAt}
+                        From {startingAtLabel(service.slug, config)}
                       </span>
                     </button>
                   );

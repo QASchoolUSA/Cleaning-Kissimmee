@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { QuoteForm } from "@/components/QuoteForm";
+import { getPricingConfig } from "@/lib/pricing-config";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ type PageProps = {
 
 export default async function QuotePage({ searchParams }: PageProps) {
   const { service = "" } = await searchParams;
+  const config = await getPricingConfig();
 
   return (
     <div className="bg-atmosphere relative overflow-hidden">
@@ -47,7 +49,7 @@ export default async function QuotePage({ searchParams }: PageProps) {
           </ul>
         </div>
         <div className="order-1 lg:order-2">
-          <QuoteForm defaultService={service} />
+          <QuoteForm defaultService={service} config={config} />
         </div>
       </div>
     </div>

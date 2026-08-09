@@ -7,7 +7,8 @@ export type Service = {
   idealFor: string[];
   includes: string[];
   duration: string;
-  startingAt: string;
+  /** Sold on consultation, so no price is published for it. */
+  quoteOnRequest?: boolean;
   image: string;
   imageAlt: string;
 };
@@ -35,7 +36,6 @@ export const services: Service[] = [
       "Trash removal",
     ],
     duration: "2–4 hours",
-    startingAt: "$129",
     image:
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Clean, bright living room after residential cleaning",
@@ -62,7 +62,6 @@ export const services: Service[] = [
       "Interior window sills and tracks",
     ],
     duration: "4–7 hours",
-    startingAt: "$249",
     image:
       "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Detailed deep cleaning of a bathroom sink and fixtures",
@@ -89,7 +88,6 @@ export const services: Service[] = [
       "Window sills and tracks",
     ],
     duration: "4–8 hours",
-    startingAt: "$279",
     image:
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Bright empty home ready after move-out cleaning",
@@ -116,7 +114,6 @@ export const services: Service[] = [
       "Photo-ready presentation",
     ],
     duration: "2–5 hours",
-    startingAt: "$159",
     image:
       "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Vacation rental bedroom prepared for the next guests",
@@ -143,7 +140,7 @@ export const services: Service[] = [
       "Custom scope available",
     ],
     duration: "Custom",
-    startingAt: "Custom",
+    quoteOnRequest: true,
     image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Modern office space ready for commercial cleaning",
@@ -170,7 +167,6 @@ export const services: Service[] = [
       "Easy pause / resume when traveling",
     ],
     duration: "2–4 hours",
-    startingAt: "$109",
     image:
       "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Cleaning supplies arranged for a recurring home service",

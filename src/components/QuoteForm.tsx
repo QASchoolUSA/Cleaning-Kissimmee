@@ -3,7 +3,13 @@
 import { FormEvent, useMemo, useState } from "react";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
-import { estimateQuote, formatMoney } from "@/lib/pricing";
+import {
+  DEFAULT_PRICING_CONFIG,
+  estimateQuote,
+  formatMoney,
+  startingAtLabel,
+  type PricingConfig,
+} from "@/lib/pricing";
 import { site } from "@/lib/site";
 
 type FormState = {
@@ -34,7 +40,13 @@ const initial: FormState = {
 
 const stepTitles = ["Your home", "Estimate", "Send quote"];
 
-export function QuoteForm({ defaultService = "" }: { defaultService?: string }) {
+export function QuoteForm({
+  defaultService = "",
+  config = DEFAULT_PRICING_CONFIG,
+}: {
+  defaultService?: string;
+  config?: PricingConfig;
+}) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>({
     ...initial,
@@ -45,14 +57,24 @@ export function QuoteForm({ defaultService = "" }: { defaultService?: string }) 
 
   const estimate = useMemo(
     () =>
-      estimateQuote({
-        service: form.service,
-        bedrooms: form.bedrooms,
-        bathrooms: form.bathrooms,
-        frequency: form.frequency,
-        sqft: form.sqft,
-      }),
-    [form.service, form.bedrooms, form.bathrooms, form.frequency, form.sqft],
+      estimateQuote(
+        {
+          service: form.service,
+          bedrooms: form.bedrooms,
+          bathrooms: form.bathrooms,
+          frequency: form.frequency,
+          sqft: form.sqft,
+        },
+        config,
+      ),
+    [
+      form.service,
+      form.bedrooms,
+      form.bathrooms,
+      form.frequency,
+      form.sqft,
+      config,
+    ],
   );
 
   const serviceName = useMemo(
@@ -175,7 +197,7 @@ export function QuoteForm({ defaultService = "" }: { defaultService?: string }) 
                         {service.shortName}
                       </span>
                       <span className="mt-0.5 block text-xs text-muted">
-                        From {service.startingAt}
+                        From {startingAtLabel(service.slug, config)}
                       </span>
                     </button>
                   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Button } from "@/components/Button";
 import { ServiceGrid } from "@/components/ServiceGrid";
+import { getPricingConfig } from "@/lib/pricing-config";
 
 export const metadata: Metadata = {
   title: "Cleaning Services",
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
     "Residential, deep clean, move-in/out, vacation rental, commercial, and recurring cleaning in Kissimmee, FL.",
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const config = await getPricingConfig();
+
   return (
     <div className="bg-atmosphere relative overflow-hidden">
       <div className="bg-grain absolute inset-0" />
@@ -24,7 +27,7 @@ export default function ServicesPage() {
           we include, how long it takes, and where pricing starts.
         </p>
         <div className="mt-14">
-          <ServiceGrid />
+          <ServiceGrid config={config} />
         </div>
         <div className="mt-16 flex flex-col gap-3 rounded-2xl bg-ink px-6 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>

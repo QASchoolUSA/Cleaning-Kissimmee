@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/Button";
 import { getAllServiceSlugs, getService, services } from "@/lib/services";
+import { startingAtLabel } from "@/lib/pricing";
+import { getPricingConfig } from "@/lib/pricing-config";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -30,6 +32,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
   const service = getService(slug);
   if (!service) notFound();
 
+  const config = await getPricingConfig();
   const related = services.filter((item) => item.slug !== service.slug).slice(0, 3);
 
   return (
@@ -94,7 +97,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               Starting at
             </p>
             <p className="font-display mt-2 text-4xl font-semibold text-ink">
-              {service.startingAt}
+              {startingAtLabel(service.slug, config)}
             </p>
             <p className="mt-2 text-sm text-muted">Typical visit: {service.duration}</p>
             <div className="mt-6 flex flex-col gap-3">

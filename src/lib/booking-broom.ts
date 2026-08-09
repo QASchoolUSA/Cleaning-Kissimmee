@@ -1,4 +1,4 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { readEnv } from "@/lib/env";
 
 /** Structured fields Booking Broom stores outside of the free-text notes. */
 export type BookingBroomProperty = {
@@ -38,21 +38,6 @@ export type BookingBroomResult = {
   id?: string;
   message?: string;
 };
-
-function readEnv(name: string): string | undefined {
-  const fromProcess = process.env[name];
-  if (fromProcess) return fromProcess;
-
-  try {
-    const { env } = getCloudflareContext();
-    const fromWorker = env[name as keyof typeof env];
-    if (typeof fromWorker === "string") return fromWorker;
-  } catch {
-    // Not running inside the Cloudflare worker (e.g. next dev).
-  }
-
-  return undefined;
-}
 
 function getConfig() {
   return {

@@ -1,61 +1,157 @@
 import { getService } from "@/lib/services";
 
-const basePrices: Record<string, number> = {
-  "residential-cleaning": 129,
-  "deep-cleaning": 249,
-  "move-in-move-out": 279,
-  "vacation-rental-cleaning": 159,
-  "commercial-cleaning": 199,
-  "recurring-cleaning": 109,
+/**
+ * Every number this site charges. Booking Broom is the source of truth; the
+ * values in `DEFAULT_PRICING_CONFIG` are what shipped and are used whenever the
+ * dashboard cannot be reached, so a quote is never blocked on it.
+ */
+export type PricingConfig = {
+  kind: "band-lookup-range";
+  basePrices: { key: string; value: number }[];
+  /** Keyed by the label the form shows, e.g. "Studio", "5+". */
+  bedroomAddon: { key: string; value: number }[];
+  bathroomAddon: { key: string; value: number }[];
+  frequencyMultipliers: { key: string; label: string; multiplier: number }[];
+  /** Square footage included before the per-step charge applies. */
+  sqftThreshold: number;
+  sqftStep: number;
+  sqftStepPrice: number;
+  /** Quoted band as fractions of the midpoint. */
+  rangeLow: number;
+  rangeHigh: number;
 };
 
-const bedroomAddon: Record<string, number> = {
-  Studio: 0,
-  "1": 0,
-  "2": 20,
-  "3": 40,
-  "4": 70,
-  "5+": 100,
+export const DEFAULT_PRICING_CONFIG: PricingConfig = {
+  kind: "band-lookup-range",
+  basePrices: [
+    { key: "residential-cleaning", value: 129 },
+    { key: "deep-cleaning", value: 249 },
+    { key: "move-in-move-out", value: 279 },
+    { key: "vacation-rental-cleaning", value: 159 },
+    { key: "commercial-cleaning", value: 199 },
+    { key: "recurring-cleaning", value: 109 },
+  ],
+  bedroomAddon: [
+    { key: "Studio", value: 0 },
+    { key: "1", value: 0 },
+    { key: "2", value: 20 },
+    { key: "3", value: 40 },
+    { key: "4", value: 70 },
+    { key: "5+", value: 100 },
+  ],
+  bathroomAddon: [
+    { key: "1", value: 0 },
+    { key: "1.5", value: 15 },
+    { key: "2", value: 30 },
+    { key: "2.5", value: 45 },
+    { key: "3", value: 60 },
+    { key: "3.5", value: 75 },
+    { key: "4+", value: 95 },
+  ],
+  frequencyMultipliers: [
+    { key: "One-time", label: "One-time", multiplier: 1 },
+    { key: "Weekly", label: "Weekly", multiplier: 0.82 },
+    { key: "Bi-weekly", label: "Bi-weekly", multiplier: 0.88 },
+    { key: "Monthly", label: "Monthly", multiplier: 0.94 },
+  ],
+  sqftThreshold: 2000,
+  sqftStep: 250,
+  sqftStepPrice: 15,
+  rangeLow: 0.92,
+  rangeHigh: 1.12,
 };
 
-const bathroomAddon: Record<string, number> = {
-  "1": 0,
-  "1.5": 15,
-  "2": 30,
-  "2.5": 45,
-  "3": 60,
-  "3.5": 75,
-  "4+": 95,
-};
+/**
+ * Guards against a remote config that parses as JSON but has no base price for a
+ * service the site sells, which would otherwise silently hide the estimate.
+ */
+export function isUsablePricingConfig(value: unknown): value is PricingConfig {
+  if (!value || typeof value !== "object") return false;
+  const config = value as Partial<PricingConfig>;
+  if (config.kind !== "band-lookup-range") return false;
 
-const frequencyMultiplier: Record<string, number> = {
-  "One-time": 1,
-  Weekly: 0.82,
-  "Bi-weekly": 0.88,
-  Monthly: 0.94,
-};
+  const numbers = [
+    config.sqftThreshold,
+    config.sqftStep,
+    config.sqftStepPrice,
+    config.rangeLow,
+    config.rangeHigh,
+  ];
+  if (numbers.some((n) => typeof n !== "number")) return false;
 
-export function estimateQuote(input: {
-  service: string;
-  bedrooms: string;
-  bathrooms: string;
-  frequency: string;
-  sqft?: string;
-}): { low: number; high: number; label: string } | null {
-  const base = basePrices[input.service];
+  if (!Array.isArray(config.bedroomAddon) || config.bedroomAddon.length === 0) {
+    return false;
+  }
+  if (!Array.isArray(config.bathroomAddon) || config.bathroomAddon.length === 0) {
+    return false;
+  }
+  if (
+    !Array.isArray(config.frequencyMultipliers) ||
+    config.frequencyMultipliers.length === 0
+  ) {
+    return false;
+  }
+  if (!Array.isArray(config.basePrices)) return false;
+
+  return DEFAULT_PRICING_CONFIG.basePrices.every((shipped) =>
+    config.basePrices!.some((row) => row.key === shipped.key)
+  );
+}
+
+function lookup(rows: { key: string; value: number }[], key: string) {
+  return rows.find((row) => row.key === key)?.value;
+}
+
+export function basePriceFor(
+  service: string,
+  config: PricingConfig = DEFAULT_PRICING_CONFIG
+): number | undefined {
+  return lookup(config.basePrices, service);
+}
+
+/**
+ * The "from $X" figure on service cards. Services sold on consultation keep
+ * their copy, so the number is only used where a price is actually published.
+ */
+export function startingAtLabel(
+  service: string,
+  config: PricingConfig = DEFAULT_PRICING_CONFIG
+): string {
+  if (getService(service)?.quoteOnRequest) return "Custom";
+  const base = basePriceFor(service, config);
+  return base === undefined ? "Custom" : formatMoney(base);
+}
+
+export function estimateQuote(
+  input: {
+    service: string;
+    bedrooms: string;
+    bathrooms: string;
+    frequency: string;
+    sqft?: string;
+  },
+  config: PricingConfig = DEFAULT_PRICING_CONFIG
+): { low: number; high: number; label: string } | null {
+  const base = basePriceFor(input.service, config);
   if (!base) return null;
 
-  const beds = bedroomAddon[input.bedrooms] ?? 40;
-  const baths = bathroomAddon[input.bathrooms] ?? 30;
-  const mult = frequencyMultiplier[input.frequency] ?? 1;
+  const beds = lookup(config.bedroomAddon, input.bedrooms) ?? 40;
+  const baths = lookup(config.bathroomAddon, input.bathrooms) ?? 30;
+  const mult =
+    config.frequencyMultipliers.find((f) => f.key === input.frequency)
+      ?.multiplier ?? 1;
 
   let sqftExtra = 0;
   const parsed = Number(String(input.sqft).replace(/[^0-9]/g, ""));
-  if (parsed > 2000) sqftExtra = Math.round((parsed - 2000) / 250) * 15;
+  if (parsed > config.sqftThreshold) {
+    sqftExtra =
+      Math.round((parsed - config.sqftThreshold) / config.sqftStep) *
+      config.sqftStepPrice;
+  }
 
   const mid = Math.round((base + beds + baths + sqftExtra) * mult);
-  const low = Math.round(mid * 0.92);
-  const high = Math.round(mid * 1.12);
+  const low = Math.round(mid * config.rangeLow);
+  const high = Math.round(mid * config.rangeHigh);
   const service = getService(input.service);
 
   return {

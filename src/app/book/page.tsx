@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BookingForm } from "@/components/BookingForm";
+import { getPricingConfig } from "@/lib/pricing-config";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ type PageProps = {
 
 export default async function BookPage({ searchParams }: PageProps) {
   const { service = "" } = await searchParams;
+  const config = await getPricingConfig();
 
   return (
     <div className="bg-atmosphere relative overflow-hidden">
@@ -46,7 +48,7 @@ export default async function BookPage({ searchParams }: PageProps) {
           </div>
         </div>
         <div className="order-1 lg:order-2">
-          <BookingForm defaultService={service} />
+          <BookingForm defaultService={service} config={config} />
         </div>
       </div>
     </div>
