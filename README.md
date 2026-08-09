@@ -19,9 +19,9 @@ Professional multi-page website for **Cleaning Kissimmee**, a cleaning company s
 ## Getting started
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env.local
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -38,6 +38,6 @@ Set in `.env.local`:
 
 ## Scripts
 
-- `npm run dev` — local development
-- `npm run build` — production build
-- `npm run start` — run production server
+- `pnpm dev` — local development
+- `pnpm build` — production build
+- `pnpm start` — run production server
