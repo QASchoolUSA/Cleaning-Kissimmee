@@ -4,9 +4,12 @@ import { FormEvent, useMemo, useState } from "react";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
 import {
+  bathroomCount,
+  bedroomCount,
   DEFAULT_PRICING_CONFIG,
   estimateQuote,
   formatMoney,
+  squareFeetCount,
   startingAtLabel,
   type PricingConfig,
 } from "@/lib/pricing";
@@ -54,6 +57,7 @@ export function QuoteForm({
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const estimate = useMemo(
     () =>
@@ -96,9 +100,54 @@ export function QuoteForm({
     event.preventDefault();
     if (!canContinue()) return;
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    setSubmitting(false);
-    setSubmitted(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          service_type: serviceName,
+          notes: form.details.trim() || undefined,
+          // This form prices the job but never asks when or where, so the
+          // manager follows up for the address and date.
+          intent: "quote",
+          property: {
+            bedrooms: bedroomCount(form.bedrooms),
+            bathrooms: bathroomCount(form.bathrooms),
+            square_feet: squareFeetCount(form.sqft),
+            home_type: form.propertyType,
+          },
+          quote: estimate
+            ? {
+                estimate: estimate.mid,
+                estimate_low: estimate.low,
+                estimate_high: estimate.high,
+                currency: "USD",
+                frequency: form.frequency,
+                payment_terms: "Due after cleaning is complete",
+              }
+            : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+      if (!res.ok || data.ok === false) {
+        setSubmitError(
+          data.message || "Unable to send your quote request. Please try again.",
+        );
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setSubmitError("Unable to send your quote request. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -125,6 +174,7 @@ export function QuoteForm({
           className="mt-8 min-h-12 w-full rounded-2xl bg-ink px-6 text-sm font-semibold text-white sm:w-auto sm:rounded-full"
           onClick={() => {
             setSubmitted(false);
+            setSubmitError(null);
             setStep(1);
             setForm({ ...initial, service: defaultService || initial.service });
           }}
@@ -357,6 +407,11 @@ export function QuoteForm({
                 placeholder="Pets, access notes, must-clean areas…"
               />
             </div>
+            {submitError && (
+              <p className="text-sm font-semibold text-red-700" role="alert">
+                {submitError}
+              </p>
+            )}
           </div>
         )}
       </div>

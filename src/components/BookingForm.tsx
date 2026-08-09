@@ -4,6 +4,8 @@ import { FormEvent, useMemo, useState } from "react";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
 import {
+  bathroomCount,
+  bedroomCount,
   DEFAULT_PRICING_CONFIG,
   estimateQuote,
   formatMoney,
@@ -58,17 +60,6 @@ const SQFT_OPTIONS = [
 ];
 
 /** Chips carry labels; these turn them into the numbers Booking Broom stores. */
-function bedroomCount(value: string): number | undefined {
-  if (value === "Studio") return 0;
-  const parsed = Number(value.replace("+", ""));
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function bathroomCount(value: string): number | undefined {
-  const parsed = Number(value.replace("+", ""));
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
 const times = [
   "8:00 AM",
   "9:00 AM",
@@ -172,8 +163,10 @@ export function BookingForm({
                 ? `${form.sqft} sq ft`
                 : undefined,
           },
+          intent: "book",
           quote: estimate
             ? {
+                estimate: estimate.mid,
                 estimate_low: estimate.low,
                 estimate_high: estimate.high,
                 currency: "USD",

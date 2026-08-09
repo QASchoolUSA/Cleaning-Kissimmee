@@ -131,7 +131,7 @@ export function estimateQuote(
     sqft?: string;
   },
   config: PricingConfig = DEFAULT_PRICING_CONFIG
-): { low: number; high: number; label: string } | null {
+): { low: number; high: number; mid: number; label: string } | null {
   const base = basePriceFor(input.service, config);
   if (!base) return null;
 
@@ -157,10 +157,28 @@ export function estimateQuote(
   return {
     low,
     high,
+    mid,
     label: service?.shortName ?? "Cleaning",
   };
 }
 
 export function formatMoney(n: number) {
   return `$${n.toLocaleString("en-US")}`;
+}
+
+/** The forms label these as chips ("Studio", "4+"); Booking Broom wants numbers. */
+export function bedroomCount(value: string): number | undefined {
+  if (value === "Studio") return 0;
+  const parsed = Number(value.replace("+", ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function bathroomCount(value: string): number | undefined {
+  const parsed = Number(value.replace("+", ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function squareFeetCount(value: string): number | undefined {
+  const parsed = Number(String(value).replace(/[^0-9]/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }

@@ -7,6 +7,10 @@ export type BookingBroomProperty = {
   square_feet?: number;
   size_label?: string;
   home_type?: string;
+  condition?: string;
+  occupants?: number;
+  last_cleaned?: string;
+  excluded_areas?: string[];
 };
 
 export type BookingBroomQuote = {
@@ -16,9 +20,12 @@ export type BookingBroomQuote = {
   currency?: string;
   service_level?: string;
   frequency?: string;
-  add_ons?: { label: string; price?: number }[];
+  add_ons?: { label: string; price?: number; quantity?: number }[];
   payment_terms?: string;
 };
+
+/** "quote" means the customer priced the job but did not ask to book it. */
+export type BookingBroomIntent = "quote" | "book";
 
 export type BookingBroomPayload = {
   customer_name: string;
@@ -29,6 +36,7 @@ export type BookingBroomPayload = {
   preferred_date?: string;
   preferred_time?: string;
   notes?: string;
+  intent?: BookingBroomIntent;
   property?: BookingBroomProperty;
   quote?: BookingBroomQuote;
 };
