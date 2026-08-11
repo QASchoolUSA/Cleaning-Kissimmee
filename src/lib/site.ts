@@ -1,8 +1,8 @@
 export const site = {
   name: "Cleaning Kissimmee",
   tagline: "Spotless homes & rentals across Central Florida",
-  phone: "(407) 555-0142",
-  phoneHref: "tel:+14075550142",
+  phone: "(689) 288-3488",
+  phoneHref: "tel:+16892883488",
   email: "hello@cleaningkissimmee.com",
   emailHref: "mailto:hello@cleaningkissimmee.com",
   address: "Kissimmee, FL",

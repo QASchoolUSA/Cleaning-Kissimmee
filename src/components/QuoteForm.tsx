@@ -390,7 +390,7 @@ export function QuoteForm({
                 className="input-field min-h-12"
                 value={form.phone}
                 onChange={(e) => update("phone", e.target.value)}
-                placeholder="(407) 555-0142"
+                placeholder="(689) 288-3488"
                 required
                 autoComplete="tel"
               />
