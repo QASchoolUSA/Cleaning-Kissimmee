@@ -18,6 +18,7 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
   title: {
     default: `${site.name} | Professional Cleaning in Kissimmee, FL`,
     template: `%s | ${site.name}`,

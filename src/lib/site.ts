@@ -1,6 +1,7 @@
 export const site = {
   name: "Cleaning Kissimmee",
   tagline: "Spotless homes & rentals across Central Florida",
+  url: "https://cleaningkissimmee.com",
   phone: "(689) 288-3488",
   phoneHref: "tel:+16892883488",
   email: "hello@cleaningkissimmee.com",
