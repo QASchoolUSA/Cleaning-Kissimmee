@@ -33,7 +33,7 @@ The booking form posts to `/api/bookings`, which forwards to Booking Broom.
 Set in `.env.local`:
 
 - `BOOKING_BROOM_URL=https://app.bookingbroom.com`
-- `BOOKING_BROOM_SITE_SLUG=kissimmee`
+- Site slug hardcoded to `kissimmee` (no `BOOKING_BROOM_SITE_SLUG` env)
 - `BOOKING_BROOM_API_KEY=bb_kissimmee_dev_key`
 
 ## Scripts

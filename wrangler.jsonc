@@ -31,7 +31,6 @@
     }
   ],
   "vars": {
-    "BOOKING_BROOM_SITE_SLUG": "kissimmee",
     "BOOKING_BROOM_API_KEY": "bb_kissimmee_dev_key"
   }
 }

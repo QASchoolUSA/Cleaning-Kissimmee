@@ -145,8 +145,7 @@ export async function sendLeadToTelegram(
   }
 
   const siteSlug =
-    env.BOOKING_BROOM_SITE_SLUG ||
-    String(record.payload.site_slug ?? "unknown");
+    "kissimmee";
 
   try {
     const response = await fetch(
@@ -184,7 +183,7 @@ async function forwardPayloadToBookingBroom(
 ): Promise<{ ok: true; id?: string } | { ok: false; error: string }> {
   const baseUrl = (env.BOOKING_BROOM_URL || "https://app.bookingbroom.com").replace(/\/$/, "");
   const apiKey = env.BOOKING_BROOM_API_KEY;
-  const siteSlug = env.BOOKING_BROOM_SITE_SLUG || "kissimmee";
+  const siteSlug = "kissimmee";
 
   if (!baseUrl || !apiKey) {
     return { ok: false, error: "BOOKING_BROOM_API_KEY not set" };

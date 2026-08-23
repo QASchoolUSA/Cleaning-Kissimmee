@@ -53,7 +53,7 @@ function getConfig() {
       readEnv("BOOKING_BROOM_URL") || "https://app.bookingbroom.com"
     ).replace(/\/$/, ""),
     apiKey: readEnv("BOOKING_BROOM_API_KEY") || "",
-    siteSlug: readEnv("BOOKING_BROOM_SITE_SLUG") || "kissimmee",
+    siteSlug: "kissimmee",
   };
 }
 
