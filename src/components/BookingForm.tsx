@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { createSoftLeadTracker } from "@/lib/soft-lead";
 import { ChipSelect } from "@/components/ChipSelect";
 import { services } from "@/lib/services";
 import {
@@ -81,6 +82,10 @@ export function BookingForm({
   defaultService?: string;
   config?: PricingConfig;
 }) {
+  const softLead = useRef<ReturnType<typeof createSoftLeadTracker> | null>(null);
+  if (!softLead.current) {
+    softLead.current = createSoftLeadTracker();
+  }
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<BookingState>({
     ...initial,
@@ -134,6 +139,47 @@ export function BookingForm({
     return Boolean(form.name && form.email && form.phone);
   }
 
+
+  useEffect(() => {
+    const tracker = softLead.current;
+    return () => tracker?.dispose();
+  }, []);
+
+  useEffect(() => {
+    if (submitted) return;
+    const fullAddress = [form.address, form.city, form.zip].filter(Boolean).join(", ");
+    softLead.current?.schedule({
+      customer_name: form.name || undefined,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+      address: fullAddress || undefined,
+      service_type: serviceName,
+      preferred_date: form.date || undefined,
+      preferred_time: form.time || undefined,
+      notes: form.notes || undefined,
+      intent: "book",
+      last_step: String(step),
+      property: {
+        bedrooms: bedroomCount(form.bedrooms),
+        bathrooms: bathroomCount(form.bathrooms),
+        size_label:
+          form.sqft && form.sqft !== "Not sure"
+            ? `${form.sqft} sq ft`
+            : undefined,
+      },
+      quote: estimate
+        ? {
+            estimate: estimate.mid,
+            estimate_low: estimate.low,
+            estimate_high: estimate.high,
+            currency: "USD",
+            frequency: form.frequency,
+            payment_terms: "Due after cleaning is complete",
+          }
+        : undefined,
+    });
+  }, [form, step, submitted, estimate, serviceName]);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!canContinue()) return;
@@ -164,6 +210,7 @@ export function BookingForm({
                 : undefined,
           },
           intent: "book",
+          session_key: softLead.current?.sessionKey,
           quote: estimate
             ? {
                 estimate: estimate.mid,

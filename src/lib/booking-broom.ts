@@ -39,6 +39,7 @@ export type BookingBroomPayload = {
   intent?: BookingBroomIntent;
   property?: BookingBroomProperty;
   quote?: BookingBroomQuote;
+  session_key?: string;
 };
 
 export type BookingBroomResult = {

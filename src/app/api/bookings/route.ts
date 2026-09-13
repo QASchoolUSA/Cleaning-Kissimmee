@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       intent?: string;
       property?: BookingBroomProperty;
       quote?: BookingBroomQuote;
+      session_key?: string;
     };
 
     if (!json.customer_name?.trim()) {
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
           : undefined,
       property: json.property,
       quote: json.quote,
+      session_key: json.session_key?.trim() || undefined,
     });
 
     if (!result.ok) {
