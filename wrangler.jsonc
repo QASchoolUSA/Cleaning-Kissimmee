@@ -23,13 +23,6 @@
   "triggers": {
     "crons": ["*/5 * * * *"]
   },
-  "kv_namespaces": [
-    {
-      "binding": "BOOKING_OUTBOX",
-      "id": "REPLACE_WITH_BOOKING_OUTBOX_KV_ID",
-      "preview_id": "REPLACE_WITH_BOOKING_OUTBOX_KV_PREVIEW_ID"
-    }
-  ],
   "vars": {
     "BOOKING_BROOM_API_KEY": "bb_kissimmee_dev_key"
   }

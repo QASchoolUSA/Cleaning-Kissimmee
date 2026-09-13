@@ -46,6 +46,9 @@ export type BookingBroomResult = {
   ok: boolean;
   id?: string;
   message?: string;
+  error?: string;
+  degraded?: boolean;
+  fallback?: "kv" | "telegram";
 };
 
 function getConfig() {
