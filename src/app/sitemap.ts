@@ -43,6 +43,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${base}/guides`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${base}/guides/airbnb-turnover-checklist-kissimmee`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
   ];
 
   const serviceRoutes: MetadataRoute.Sitemap = services.map((service) => ({
