@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { QuoteForm } from "@/components/QuoteForm";
 import { getPricingConfig } from "@/lib/pricing-config";
 import { site } from "@/lib/site";
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
   title: "Price Calculator",
   description:
     "Get an instant cleaning estimate and request a free confirmed quote from Cleaning Kissimmee.",
+  alternates: { canonical: `${site.url}/quote` },
 };
 
 type PageProps = {
@@ -31,7 +33,15 @@ export default async function QuotePage({ searchParams }: PageProps) {
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-4 sm:text-lg">
             Tap your home details, watch the range update, then send it for a
-            confirmed quote—no pressure.
+            confirmed quote—no pressure. Unsure which scope fits? Compare{" "}
+            <Link href="/services" className="font-semibold text-fresh hover:text-fresh-deep">
+              cleaning services
+            </Link>{" "}
+            or read our{" "}
+            <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
+              Kissimmee guides
+            </Link>
+            .
           </p>
           <ul className="mt-4 hidden space-y-3 text-sm text-ink-soft sm:mt-8 sm:block">
             <li className="flex gap-3">
@@ -44,7 +54,10 @@ export default async function QuotePage({ searchParams }: PageProps) {
             </li>
             <li className="flex gap-3">
               <span className="mt-1 h-2 w-2 rounded-full bg-fresh" />
-              Prefer to talk? Call {site.phone}
+              Prefer to talk? Call {site.phone} or{" "}
+              <Link href="/contact" className="font-semibold text-fresh hover:text-fresh-deep">
+                contact us
+              </Link>
             </li>
           </ul>
         </div>

@@ -83,6 +83,58 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="border-t border-line bg-white py-14 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-fresh">
+              Local guides
+            </p>
+            <h2 className="font-display mt-3 text-[1.85rem] font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
+              Hosting near the parks?
+            </h2>
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-muted sm:text-lg">
+              Use our Kissimmee guides for turnover planning, then book{" "}
+              <Link
+                href="/services/vacation-rental-cleaning"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                vacation rental cleaning
+              </Link>{" "}
+              or browse{" "}
+              <Link
+                href="/services"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                all services
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+            <Link
+              href="/guides/airbnb-turnover-checklist-kissimmee"
+              className="group max-w-xl rounded-2xl border border-line bg-paper px-6 py-5 transition hover:border-fresh"
+            >
+              <p className="font-display text-lg font-semibold text-ink">
+                Airbnb turnover checklist for Kissimmee
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                Room-by-room host checklist so between-guest cleans stay consistent.
+              </p>
+              <span className="mt-3 inline-flex text-sm font-semibold text-fresh group-hover:text-fresh-deep">
+                Read the guide →
+              </span>
+            </Link>
+            <Link
+              href="/guides"
+              className="text-sm font-semibold text-fresh hover:text-fresh-deep"
+            >
+              All cleaning guides →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white py-14 sm:py-28">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
           <div>

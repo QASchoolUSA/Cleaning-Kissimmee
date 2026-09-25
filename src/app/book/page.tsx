@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BookingForm } from "@/components/BookingForm";
 import { getPricingConfig } from "@/lib/pricing-config";
 import { site } from "@/lib/site";
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
   title: "Book a Cleaning",
   description:
     "Book residential, vacation rental, or commercial cleaning online with Cleaning Kissimmee.",
+  alternates: { canonical: `${site.url}/book` },
 };
 
 type PageProps = {
@@ -29,7 +31,19 @@ export default async function BookPage({ searchParams }: PageProps) {
             Reserve in three easy taps
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-4 sm:text-lg">
-            Pick a service, choose a day, share access details, and confirm.
+            Pick a service, choose a day, share access details, and confirm. Prefer
+            to compare first? Browse{" "}
+            <Link href="/services" className="font-semibold text-fresh hover:text-fresh-deep">
+              all services
+            </Link>{" "}
+            or hosts can review the{" "}
+            <Link
+              href="/guides/airbnb-turnover-checklist-kissimmee"
+              className="font-semibold text-fresh hover:text-fresh-deep"
+            >
+              Airbnb turnover checklist
+            </Link>
+            .
           </p>
           <div className="mt-4 hidden space-y-3 rounded-2xl border border-line bg-white/70 p-5 text-sm text-muted sm:mt-8 sm:block">
             <p>
@@ -44,6 +58,10 @@ export default async function BookPage({ searchParams }: PageProps) {
               <a href={site.phoneHref} className="text-fresh hover:text-fresh-deep">
                 {site.phone}
               </a>
+              {" · "}
+              <Link href="/contact" className="text-fresh hover:text-fresh-deep">
+                Contact
+              </Link>
             </p>
           </div>
         </div>
