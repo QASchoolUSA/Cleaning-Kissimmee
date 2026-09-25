@@ -68,6 +68,14 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link
+                href="/guides/airbnb-turnover-checklist-kissimmee"
+                className="hover:text-white"
+              >
+                Airbnb turnover checklist
+              </Link>
+            </li>
+            <li>
               <Link href="/about" className="hover:text-white">
                 About us
               </Link>

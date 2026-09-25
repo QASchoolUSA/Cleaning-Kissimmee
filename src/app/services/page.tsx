@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Button } from "@/components/Button";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { getPricingConfig } from "@/lib/pricing-config";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Cleaning Services",
   description:
     "Residential, deep clean, move-in/out, vacation rental, commercial, and recurring cleaning in Kissimmee, FL.",
+  alternates: { canonical: `${site.url}/services` },
 };
 
 export default async function ServicesPage() {
@@ -29,7 +32,34 @@ export default async function ServicesPage() {
         <div className="mt-14">
           <ServiceGrid config={config} />
         </div>
-        <div className="mt-16 flex flex-col gap-3 rounded-2xl bg-ink px-6 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mt-16 rounded-2xl border border-line bg-white/80 px-6 py-8 sm:px-8">
+          <h2 className="font-display text-2xl font-semibold text-ink">
+            Hosting a short-term rental?
+          </h2>
+          <p className="mt-2 max-w-2xl text-muted">
+            Pair{" "}
+            <Link
+              href="/services/vacation-rental-cleaning"
+              className="font-semibold text-fresh hover:text-fresh-deep"
+            >
+              vacation rental cleaning
+            </Link>{" "}
+            with our{" "}
+            <Link
+              href="/guides/airbnb-turnover-checklist-kissimmee"
+              className="font-semibold text-fresh hover:text-fresh-deep"
+            >
+              Airbnb turnover checklist
+            </Link>
+            , or browse{" "}
+            <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
+              all guides
+            </Link>
+            .
+          </p>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 rounded-2xl bg-ink px-6 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <h2 className="font-display text-2xl font-semibold">
               Not sure which service fits?

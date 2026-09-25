@@ -75,7 +75,15 @@ export default function GuidesIndexPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
             Checklists and local tips for hosts and homeowners across Kissimmee,
-            Celebration, and the theme-park corridor.
+            Celebration, and the theme-park corridor. Looking for a cleaner?{" "}
+            <Link href="/services" className="font-semibold text-[#9fddd5] hover:text-white">
+              Browse services
+            </Link>{" "}
+            or{" "}
+            <Link href="/book" className="font-semibold text-[#9fddd5] hover:text-white">
+              book online
+            </Link>
+            .
           </p>
         </div>
       </section>
