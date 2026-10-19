@@ -74,7 +74,7 @@ export default function AirbnbTurnoverChecklistPage() {
     description: DESCRIPTION,
     image: HERO_IMAGE,
     datePublished: "2026-09-25",
-    dateModified: "2026-09-25",
+    dateModified: "2026-10-19",
     author: {
       "@type": "Organization",
       name: site.name,
@@ -620,8 +620,15 @@ export default function AirbnbTurnoverChecklistPage() {
                 className="font-semibold text-fresh hover:text-fresh-deep"
               >
                 about us
-              </Link>{" "}
-              or browse all{" "}
+              </Link>
+              , return to{" "}
+              <Link
+                href="/guides"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                all guides
+              </Link>
+              , or browse all{" "}
               <Link
                 href="/services"
                 className="font-semibold text-fresh hover:text-fresh-deep"

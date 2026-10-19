@@ -14,8 +14,23 @@ type PageProps = {
 
 const AIRBNB_GUIDE = "/guides/airbnb-turnover-checklist-kissimmee";
 
+const uniqueDepth: Record<string, string> = {
+  "residential-cleaning":
+    "Most Kissimmee homes book residential cleaning when kitchens and baths need a reliable reset between busy weeks—not a full remodel-level detail. We follow the same reachable-surface checklist each visit so you know what is in and out of scope.",
+  "deep-cleaning":
+    "Deep cleaning is the right step when dust, grout, and baseboards have built up after guests, renovations, or a long gap between cleans. It goes beyond the residential checklist without replacing a same-day vacation turnover.",
+  "move-in-move-out":
+    "Empty cabinets, ovens, and floors matter when keys change hands. Move cleaning is built for vacant homes—rentals ending a lease, sellers before showings, or new owners before furniture arrives—not for furnished guest turnovers.",
+  "vacation-rental-cleaning":
+    "Theme-park corridor listings often need same-day turnovers: bathrooms, kitchens, bedding change-outs, floors, high-touch surfaces, trash, and guest-facing presentation. Pair this service with our Airbnb turnover checklist so hosts and crews share one QA standard.",
+  "commercial-cleaning":
+    "Offices, clinics, and small storefronts across our service area usually need discreet after-hours or scheduled cleans—workstations, restrooms, break areas, and common floors—scoped to how the space is used.",
+  "recurring-cleaning":
+    "Recurring plans lock a preferred day so each visit builds on the last. Households and hosts who want predictable polish between peaks often choose weekly or bi-weekly instead of one-off residential cleans.",
+};
+
 function serviceFaqs(service: Service): { q: string; a: string }[] {
-  return [
+  const base = [
     {
       q: `What is included in ${service.shortName.toLowerCase()} in Kissimmee?`,
       a: `${service.description} Typical visits include: ${service.includes.slice(0, 3).join("; ")}.`,
@@ -29,6 +44,34 @@ function serviceFaqs(service: Service): { q: string; a: string }[] {
       a: `Book online, request a free quote, or call ${site.phone}. We’ll confirm timing, access notes, and final pricing before the visit.`,
     },
   ];
+
+  if (service.slug === "vacation-rental-cleaning") {
+    return [
+      {
+        q: "Is vacation rental cleaning the same as residential cleaning?",
+        a: "No. Turnovers emphasize bedding change-outs, bathroom disinfection, trash, restock notes, and photo-ready presentation on a tight clock. Residential cleans focus on maintenance soil between longer gaps.",
+      },
+      {
+        q: "Do you follow a Kissimmee Airbnb turnover checklist?",
+        a: "Yes. Hosts can use our published Airbnb turnover checklist for room-by-room QA, and our vacation rental cleaning service covers the guest-ready clean that checklist supports.",
+      },
+      base[1],
+      base[2],
+    ];
+  }
+
+  if (service.slug === "deep-cleaning") {
+    return [
+      base[0],
+      {
+        q: "When should hosts book deep cleaning instead of a turnover?",
+        a: "Book deep cleaning after heavy seasonal occupancy when grout, baseboards, and outdoor-adjacent floors need a reset. Use vacation rental cleaning for same-day between-guest turns.",
+      },
+      base[2],
+    ];
+  }
+
+  return base;
 }
 
 export async function generateStaticParams() {
@@ -54,9 +97,10 @@ export default async function ServiceDetailPage({ params }: PageProps) {
   if (!service) notFound();
 
   const config = await getPricingConfig();
-  const related = services.filter((item) => item.slug !== service.slug).slice(0, 3);
+  const related = services.filter((item) => item.slug !== service.slug);
   const faqs = serviceFaqs(service);
   const isVacation = service.slug === "vacation-rental-cleaning";
+  const depth = uniqueDepth[service.slug];
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -154,6 +198,9 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               {service.description} We serve {site.serviceArea} with clear checklists
               so hosts, homeowners, and workplaces know what to expect.
             </p>
+            {depth ? (
+              <p className="mt-4 leading-relaxed text-muted">{depth}</p>
+            ) : null}
             <ul className="mt-8 grid gap-3 sm:grid-cols-2">
               {service.includes.map((item) => (
                 <li
@@ -177,22 +224,74 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               </ul>
             </div>
 
-            {isVacation && (
-              <p className="mt-10 rounded-2xl border border-line bg-paper px-5 py-4 text-sm leading-relaxed text-muted">
-                Preparing turnovers? Use our{" "}
-                <Link
-                  href={AIRBNB_GUIDE}
-                  className="font-semibold text-fresh hover:text-fresh-deep"
-                >
-                  Airbnb turnover checklist for Kissimmee
-                </Link>{" "}
-                alongside this service, or browse{" "}
-                <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
-                  all guides
-                </Link>
-                .
-              </p>
-            )}
+            <p className="mt-10 rounded-2xl border border-line bg-paper px-5 py-4 text-sm leading-relaxed text-muted">
+              {isVacation ? (
+                <>
+                  Preparing turnovers? Use our{" "}
+                  <Link
+                    href={AIRBNB_GUIDE}
+                    className="font-semibold text-fresh hover:text-fresh-deep"
+                  >
+                    Airbnb turnover checklist for Kissimmee
+                  </Link>{" "}
+                  alongside this service, or browse{" "}
+                  <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
+                    all guides
+                  </Link>
+                  . Between seasons, many hosts also book{" "}
+                  <Link
+                    href="/services/deep-cleaning"
+                    className="font-semibold text-fresh hover:text-fresh-deep"
+                  >
+                    deep cleaning
+                  </Link>
+                  .
+                </>
+              ) : service.slug === "deep-cleaning" ||
+                service.slug === "move-in-move-out" ||
+                service.slug === "recurring-cleaning" ? (
+                <>
+                  Hosting a short-term rental? See{" "}
+                  <Link
+                    href="/services/vacation-rental-cleaning"
+                    className="font-semibold text-fresh hover:text-fresh-deep"
+                  >
+                    vacation rental cleaning
+                  </Link>{" "}
+                  and our{" "}
+                  <Link
+                    href={AIRBNB_GUIDE}
+                    className="font-semibold text-fresh hover:text-fresh-deep"
+                  >
+                    Airbnb turnover checklist
+                  </Link>
+                  , or browse{" "}
+                  <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
+                    all guides
+                  </Link>
+                  .
+                </>
+              ) : (
+                <>
+                  Compare scopes on{" "}
+                  <Link href="/services" className="font-semibold text-fresh hover:text-fresh-deep">
+                    all services
+                  </Link>
+                  , or read our{" "}
+                  <Link href="/guides" className="font-semibold text-fresh hover:text-fresh-deep">
+                    Kissimmee cleaning guides
+                  </Link>
+                  —including the{" "}
+                  <Link
+                    href={AIRBNB_GUIDE}
+                    className="font-semibold text-fresh hover:text-fresh-deep"
+                  >
+                    Airbnb turnover checklist
+                  </Link>
+                  .
+                </>
+              )}
+            </p>
           </div>
 
           <aside className="h-fit rounded-2xl border border-line bg-paper p-6 sm:p-8 lg:sticky lg:top-28">
@@ -244,7 +343,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
           <h2 className="font-display text-3xl font-semibold text-ink">
             Related services
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <Link
                 key={item.slug}
