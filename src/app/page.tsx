@@ -3,6 +3,7 @@ import { Button } from "@/components/Button";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { getPricingConfig } from "@/lib/pricing-config";
+import { services } from "@/lib/services";
 import { site } from "@/lib/site";
 
 const trust = [
@@ -32,8 +33,30 @@ const steps = [
 export default async function HomePage() {
   const config = await getPricingConfig();
 
+  const localBusiness = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: site.name,
+    url: site.url,
+    telephone: site.phone,
+    email: site.email,
+    description: site.tagline,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Kissimmee",
+      addressRegion: "FL",
+      addressCountry: "US",
+    },
+    areaServed: site.serviceArea,
+    openingHours: "Mo-Sa 08:00-18:00",
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }}
+      />
       <Hero />
 
       <section className="border-b border-line bg-white">
@@ -72,7 +95,21 @@ export default async function HomePage() {
           <div className="mt-8 sm:mt-14">
             <ServiceGrid compact config={config} />
           </div>
-          <div className="mt-8 sm:mt-12">
+          <nav
+            aria-label="All cleaning services"
+            className="mt-8 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted sm:mt-10"
+          >
+            {services.map((service) => (
+              <Link
+                key={service.slug}
+                href={`/services/${service.slug}`}
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                {service.shortName}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-6 sm:mt-8">
             <Link
               href="/services"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-fresh hover:text-fresh-deep"
@@ -93,44 +130,80 @@ export default async function HomePage() {
               Hosting near the parks?
             </h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-muted sm:text-lg">
-              Use our Kissimmee guides for turnover planning, then book{" "}
+              Kissimmee short-term rentals often turn the same day. Use our{" "}
+              <Link
+                href="/guides"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                cleaning guides
+              </Link>{" "}
+              for turnover planning, then book{" "}
               <Link
                 href="/services/vacation-rental-cleaning"
                 className="font-semibold text-fresh hover:text-fresh-deep"
               >
                 vacation rental cleaning
-              </Link>{" "}
-              or browse{" "}
+              </Link>
+              —or a{" "}
               <Link
-                href="/services"
+                href="/services/deep-cleaning"
                 className="font-semibold text-fresh hover:text-fresh-deep"
               >
-                all services
+                deep clean
+              </Link>{" "}
+              between peak seasons. Homeowners can also compare{" "}
+              <Link
+                href="/services/residential-cleaning"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                residential
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/services/recurring-cleaning"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                recurring cleaning
               </Link>
               .
             </p>
           </div>
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-stretch">
             <Link
               href="/guides/airbnb-turnover-checklist-kissimmee"
-              className="group max-w-xl rounded-2xl border border-line bg-paper px-6 py-5 transition hover:border-fresh"
+              className="group max-w-xl flex-1 rounded-2xl border border-line bg-paper px-6 py-5 transition hover:border-fresh"
             >
               <p className="font-display text-lg font-semibold text-ink">
                 Airbnb turnover checklist for Kissimmee
               </p>
               <p className="mt-1 text-sm text-muted">
-                Room-by-room host checklist so between-guest cleans stay consistent.
+                Room-by-room host checklist—baths, kitchens, bedding, pool/lanai,
+                linen pars, and photo QA—so between-guest cleans stay consistent.
               </p>
               <span className="mt-3 inline-flex text-sm font-semibold text-fresh group-hover:text-fresh-deep">
                 Read the guide →
               </span>
             </Link>
-            <Link
-              href="/guides"
-              className="text-sm font-semibold text-fresh hover:text-fresh-deep"
-            >
-              All cleaning guides →
-            </Link>
+            <div className="flex max-w-sm flex-col justify-center gap-3 text-sm">
+              <Link
+                href="/guides"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                All cleaning guides →
+              </Link>
+              <Link
+                href="/services/move-in-move-out"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                Move-in / move-out cleaning →
+              </Link>
+              <Link
+                href="/services"
+                className="font-semibold text-fresh hover:text-fresh-deep"
+              >
+                Compare all services →
+              </Link>
+            </div>
           </div>
         </div>
       </section>
